@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reloj de jugadas</title>
+  <style>
+    :root {
+      --bg: #f7f1e3;
+      --card: #fffaf0;
+      --text: #2b2b2b;
+      --muted: #666;
+      --accent: #8b5e34;
+      --accent2: #d6a15d;
+      --danger: #b00020;
+      --ok: #167a3a;
+      --border: #d8c3a5;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 14px;
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      margin: 8px 0 12px;
+      text-align: center;
+    }
+
+    .setup, .panel, .moves {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      margin-bottom: 12px;
+    }
+
+    .setup-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      font-size: .9rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 1rem;
+      background: white;
+    }
+
+    .clock-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .player {
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      padding: 16px 10px;
+      text-align: center;
+      background: white;
+      min-height: 155px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .player.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(139, 94, 52, .13);
+    }
+
+    .player-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .total-time {
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1;
+      margin: 8px 0;
+    }
+
+    .move-time {
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .turn {
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 12px 0;
+    }
+
+    .big-button {
+      width: 100%;
+      min-height: 86px;
+      border: none;
+      border-radius: 20px;
+      background: var(--accent);
+      color: white;
+      font-size: 1.35rem;
+      font-weight: 800;
+      padding: 12px;
+      touch-action: manipulation;
+    }
+
+    .big-button:active { transform: scale(.99); }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    button.secondary {
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 12px;
+      padding: 11px 8px;
+      font-weight: 700;
+      font-size: .95rem;
+      color: var(--text);
+    }
+
+    button.danger { color: var(--danger); }
+    button.ok { color: var(--ok); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .95rem;
+    }
+
+    th, td {
+      padding: 8px 6px;
+      border-bottom: 1px solid #eadcc8;
+      text-align: center;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+      font-size: .95rem;
+      color: var(--muted);
+    }
+
+    .hint {
+      font-size: .9rem;
+      color: var(--muted);
+      text-align: center;
+      margin: 8px 0 0;
+    }
+
+    @media (max-width: 520px) {
+      .app { padding: 10px; }
+      .setup-grid { grid-template-columns: 1fr 1fr; }
+      .clock-row { gap: 8px; }
+      .player { min-height: 140px; padding: 12px 8px; }
+      .total-time { font-size: 1.75rem; }
+      .big-button { min-height: 92px; font-size: 1.18rem; }
+      .buttons { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Reloj de jugadas</h1>
+
+    <section class="setup">
+      <div class="setup-grid">
+        <div>
+          <label for="baseMinutes">Tiempo inicial por jugador</label>
+          <input id="baseMinutes" type="number" min="0" step="1" value="45">
+        </div>
+        <div>
+          <label for="incrementSeconds">Incremento por jugada</label>
+          <input id="incrementSeconds" type="number" min="0" step="1" value="15">
+        </div>
+      </div>
+      <p class="hint">Para entrenar 45+15, deja 45 y 15. Para solo medir jugadas, puedes poner 0 y 0.</p>
+    </section>
+
+    <section class="panel">
+      <div class="clock-row">
+        <div id="whiteCard" class="player active">
+          <div class="player-name">Blancas</div>
+          <div id="whiteTotal" class="total-time">45:00</div>
+          <div>Jugada actual: <strong id="whiteMove">0s</strong></div>
+        </div>
+        <div id="blackCard" class="player">
+          <div class="player-name">Negras</div>
+          <div id="blackTotal" class="total-time">45:00</div>
+          <div>Jugada actual: <strong id="blackMove">0s</strong></div>
+        </div>
+      </div>
+
+      <div id="turnText" class="turn">Turno de blancas</div>
+
+      <button id="tapButton" class="big-button">Tocar cuando blancas hacen su jugada</button>
+
+      <div class="buttons">
+        <button id="startPauseBtn" class="secondary ok">Iniciar</button>
+        <button id="undoBtn" class="secondary">Deshacer última</button>
+        <button id="resetBtn" class="secondary danger">Reiniciar</button>
+      </div>
+    </section>
+
+    <section class="moves">
+      <h2 style="font-size:1.05rem;margin:0 0 8px;">Tiempos por jugada</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Blancas</th>
+            <th>Negras</th>
+          </tr>
+        </thead>
+        <tbody id="movesBody"></tbody>
+      </table>
+
+      <div class="summary">
+        <div>Promedio blancas: <strong id="avgWhite">0s</strong></div>
+        <div>Promedio negras: <strong id="avgBlack">0s</strong></div>
+      </div>
+
+      <div class="buttons">
+        <button id="copyBtn" class="secondary">Copiar resumen</button>
+        <button id="csvBtn" class="secondary">Descargar CSV</button>
+        <button id="clearStorageBtn" class="secondary danger">Borrar guardado</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const state = {
+      running: false,
+      turn: "white",
+      moveNumber: 1,
+      whiteRemaining: 45 * 60,
+      blackRemaining: 45 * 60,
+      currentMoveStart: null,
+      currentMoveElapsed: 0,
+      records: [],
+      history: []
+    };
+
+    let timerId = null;
+
+    function formatTime(seconds) {
+      seconds = Math.max(0, Math.round(seconds));
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m}:${String(s).padStart(2, "0")}`;
+    }
+
+    function formatMove(seconds) {
+      seconds = Math.round(seconds);
+      if (seconds < 60) return `${seconds}s`;
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m}m ${s}s`;
+    }
+
+    function getBaseSeconds() {
+      return Math.max(0, Number($("baseMinutes").value || 0)) * 60;
+    }
+
+    function getIncrementSeconds() {
+      return Math.max(0, Number($("incrementSeconds").value || 0));
+    }
+
+    function currentElapsedNow() {
+      if (!state.running || !state.currentMoveStart) return state.currentMoveElapsed;
+      return state.currentMoveElapsed + (Date.now() - state.currentMoveStart) / 1000;
+    }
+
+    function save() {
+      localStorage.setItem("relojJugadasNicole", JSON.stringify({
+        state,
+        baseMinutes: $("baseMinutes").value,
+        incrementSeconds: $("incrementSeconds").value
+      }));
+    }
+
+    function load() {
+      const raw = localStorage.getItem("relojJugadasNicole");
+      if (!raw) return;
+      try {
+        const data = JSON.parse(raw);
+        $("baseMinutes").value = data.baseMinutes ?? 45;
+        $("incrementSeconds").value = data.incrementSeconds ?? 15;
+        Object.assign(state, data.state);
+        state.running = false;
+        state.currentMoveStart = null;
+      } catch (e) {
+        console.warn("No se pudo cargar el guardado", e);
+      }
+    }
+
+    function snapshot() {
+      state.history.push(JSON.stringify({
+        turn: state.turn,
+        moveNumber: state.moveNumber,
+        whiteRemaining: state.whiteRemaining,
+        blackRemaining: state.blackRemaining,
+        currentMoveElapsed: state.currentMoveElapsed,
+        records: state.records
+      }));
+    }
+
+    function render() {
+      const elapsed = currentElapsedNow();
+      let whiteRem = state.whiteRemaining;
+      let blackRem = state.blackRemaining;
+
+      if (state.running && state.turn === "white") whiteRem -= elapsed;
+      if (state.running && state.turn === "black") blackRem -= elapsed;
+
+      $("whiteTotal").textContent = formatTime(whiteRem);
+      $("blackTotal").textContent = formatTime(blackRem);
+
+      $("whiteMove").textContent = state.turn === "white" ? formatMove(elapsed) : "0s";
+      $("blackMove").textContent = state.turn === "black" ? formatMove(elapsed) : "0s";
+
+      $("whiteCard").classList.toggle("active", state.turn === "white");
+      $("blackCard").classList.toggle("active", state.turn === "black");
+
+      const sideText = state.turn === "white" ? "blancas" : "negras";
+      $("turnText").textContent = state.running ? `Turno de ${sideText}` : `Pausado · turno de ${sideText}`;
+      $("tapButton").textContent = `Tocar cuando ${sideText} hacen su jugada`;
+      $("startPauseBtn").textContent = state.running ? "Pausar" : "Iniciar";
+
+      renderTable();
+    }
+
+    function renderTable() {
+      const grouped = [];
+      for (const r of state.records) {
+        if (!grouped[r.move - 1]) grouped[r.move - 1] = { move: r.move, white: "", black: "" };
+        grouped[r.move - 1][r.side] = formatMove(r.seconds);
+      }
+
+      $("movesBody").innerHTML = grouped.map(row => `
+        <tr>
+          <td>${row.move}</td>
+          <td>${row.white || "—"}</td>
+          <td>${row.black || "—"}</td>
+        </tr>
+      `).join("");
+
+      const whites = state.records.filter(r => r.side === "white").map(r => r.seconds);
+      const blacks = state.records.filter(r => r.side === "black").map(r => r.seconds);
+      $("avgWhite").textContent = whites.length ? formatMove(whites.reduce((a,b)=>a+b,0)/whites.length) : "0s";
+      $("avgBlack").textContent = blacks.length ? formatMove(blacks.reduce((a,b)=>a+b,0)/blacks.length) : "0s";
+    }
+
+    function startPause() {
+      if (state.running) {
+        state.currentMoveElapsed = currentElapsedNow();
+        state.currentMoveStart = null;
+        state.running = false;
+      } else {
+        state.currentMoveStart = Date.now();
+        state.running = true;
+      }
+      save();
+      render();
+    }
+
+    function makeMove() {
+      if (!state.running) startPause();
+
+      snapshot();
+
+      const elapsed = currentElapsedNow();
+      const inc = getIncrementSeconds();
+
+      state.records.push({
+        move: state.moveNumber,
+        side: state.turn,
+        seconds: elapsed
+      });
+
+      if (state.turn === "white") {
+        state.whiteRemaining = Math.max(0, state.whiteRemaining - elapsed) + inc;
+        state.turn = "black";
+      } else {
+        state.blackRemaining = Math.max(0, state.blackRemaining - elapsed) + inc;
+        state.turn = "white";
+        state.moveNumber += 1;
+      }
+
+      state.currentMoveElapsed = 0;
+      state.currentMoveStart = Date.now();
+      save();
+      render();
+    }
+
+    function resetAll() {
+      if (!confirm("¿Reiniciar el reloj y borrar la lista de jugadas?")) return;
+      state.running = false;
+      state.turn = "white";
+      state.moveNumber = 1;
+      state.whiteRemaining = getBaseSeconds();
+      state.blackRemaining = getBaseSeconds();
+      state.currentMoveStart = null;
+      state.currentMoveElapsed = 0;
+      state.records = [];
+      state.history = [];
+      save();
+      render();
+    }
+
+    function undoLast() {
+      const last = state.history.pop();
+      if (!last) return;
+      const prev = JSON.parse(last);
+      state.turn = prev.turn;
+      state.moveNumber = prev.moveNumber;
+      state.whiteRemaining = prev.whiteRemaining;
+      state.blackRemaining = prev.blackRemaining;
+      state.currentMoveElapsed = prev.currentMoveElapsed;
+      state.records = prev.records;
+      state.currentMoveStart = state.running ? Date.now() : null;
+      save();
+      render();
+    }
+
+    function textSummary() {
+      const rows = [];
+      const grouped = [];
+      for (const r of state.records) {
+        if (!grouped[r.move - 1]) grouped[r.move - 1] = { move: r.move, white: "", black: "" };
+        grouped[r.move - 1][r.side] = formatMove(r.seconds);
+      }
+      for (const row of grouped) {
+        rows.push(`${row.move}. ${row.white || "-"}, ${row.black || "-"}`);
+      }
+      return rows.join("\n");
+    }
+
+    async function copySummary() {
+      const text = textSummary();
+      if (!text) return alert("Todavía no hay jugadas.");
+      try {
+        await navigator.clipboard.writeText(text);
+        alert("Resumen copiado.");
+      } catch {
+        alert(text);
+      }
+    }
+
+    function downloadCSV() {
+      if (!state.records.length) return alert("Todavía no hay jugadas.");
+      const lines = ["jugada,blancas,negras"];
+      const grouped = [];
+      for (const r of state.records) {
+        if (!grouped[r.move - 1]) grouped[r.move - 1] = { move: r.move, white: "", black: "" };
+        grouped[r.move - 1][r.side] = Math.round(r.seconds);
+      }
+      for (const row of grouped) {
+        lines.push(`${row.move},${row.white},${row.black}`);
+      }
+      const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "tiempos_jugadas.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function clearStorage() {
+      if (!confirm("¿Borrar el guardado del navegador?")) return;
+      localStorage.removeItem("relojJugadasNicole");
+      alert("Guardado borrado.");
+    }
+
+    $("startPauseBtn").addEventListener("click", startPause);
+    $("tapButton").addEventListener("click", makeMove);
+    $("resetBtn").addEventListener("click", resetAll);
+    $("undoBtn").addEventListener("click", undoLast);
+    $("copyBtn").addEventListener("click", copySummary);
+    $("csvBtn").addEventListener("click", downloadCSV);
+    $("clearStorageBtn").addEventListener("click", clearStorage);
+
+    $("baseMinutes").addEventListener("change", () => {
+      if (!state.records.length && !state.running) {
+        state.whiteRemaining = getBaseSeconds();
+        state.blackRemaining = getBaseSeconds();
+        save();
+        render();
+      }
+    });
+
+    $("incrementSeconds").addEventListener("change", () => {
+      save();
+      render();
+    });
+
+    load();
+    if (!state.records.length) {
+      state.whiteRemaining = getBaseSeconds();
+      state.blackRemaining = getBaseSeconds();
+    }
+
+    render();
+    timerId = setInterval(render, 250);
+  </script>
+</body>
+</html>
