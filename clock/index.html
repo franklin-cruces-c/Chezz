@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reloj de jugadas</title>
+  <title>Chezz Clock</title>
   <style>
     :root {
       --bg: #f7f1e3;
@@ -15,6 +15,7 @@
       --danger: #b00020;
       --ok: #167a3a;
       --border: #d8c3a5;
+      --disabled: #e9e1d4;
     }
 
     * { box-sizing: border-box; }
@@ -27,24 +28,24 @@
     }
 
     .app {
-      max-width: 720px;
+      max-width: 760px;
       margin: 0 auto;
-      padding: 14px;
+      padding: 12px;
     }
 
     h1 {
-      font-size: 1.35rem;
-      margin: 8px 0 12px;
+      font-size: 1.28rem;
+      margin: 6px 0 10px;
       text-align: center;
     }
 
-    .setup, .panel, .moves {
+    .setup, .panel, .moves, .notation {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 14px;
+      padding: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,.06);
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .setup-grid {
@@ -56,7 +57,7 @@
 
     label {
       display: block;
-      font-size: .9rem;
+      font-size: .86rem;
       color: var(--muted);
       margin-bottom: 4px;
     }
@@ -73,16 +74,16 @@
     .clock-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 10px;
     }
 
     .player {
       border: 2px solid var(--border);
       border-radius: 18px;
-      padding: 16px 10px;
+      padding: 12px 8px;
       text-align: center;
       background: white;
-      min-height: 155px;
+      min-height: 128px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -94,44 +95,51 @@
     }
 
     .player-name {
-      font-size: 1.05rem;
-      font-weight: 700;
-      margin-bottom: 6px;
+      font-size: 1rem;
+      font-weight: 800;
+      margin-bottom: 4px;
     }
 
     .total-time {
-      font-size: 2.2rem;
-      font-weight: 800;
+      font-size: 2rem;
+      font-weight: 900;
       line-height: 1;
       margin: 8px 0;
     }
 
-    .move-time {
-      color: var(--muted);
-      font-size: 1rem;
-    }
-
     .turn {
       text-align: center;
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin: 12px 0;
+      font-size: 1.05rem;
+      font-weight: 800;
+      margin: 10px 0;
     }
 
-    .big-button {
-      width: 100%;
-      min-height: 86px;
+    .physical-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .clock-button {
+      min-height: 88px;
       border: none;
       border-radius: 20px;
+      font-size: 1.1rem;
+      font-weight: 900;
+      padding: 10px;
+      touch-action: manipulation;
       background: var(--accent);
       color: white;
-      font-size: 1.35rem;
-      font-weight: 800;
-      padding: 12px;
-      touch-action: manipulation;
     }
 
-    .big-button:active { transform: scale(.99); }
+    .clock-button:disabled {
+      background: var(--disabled);
+      color: #8b8175;
+      border: 1px solid var(--border);
+    }
+
+    .clock-button:active:not(:disabled) { transform: scale(.99); }
 
     .buttons {
       display: grid;
@@ -144,30 +152,141 @@
       border: 1px solid var(--border);
       background: white;
       border-radius: 12px;
-      padding: 11px 8px;
-      font-weight: 700;
-      font-size: .95rem;
+      padding: 10px 8px;
+      font-weight: 800;
+      font-size: .92rem;
       color: var(--text);
     }
 
     button.danger { color: var(--danger); }
     button.ok { color: var(--ok); }
 
+    .hint {
+      font-size: .86rem;
+      color: var(--muted);
+      text-align: center;
+      margin: 8px 0 0;
+    }
+
+    .notation-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .notation-title h2 {
+      font-size: 1.02rem;
+      margin: 0;
+    }
+
+    .preview {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-size: 1.08rem;
+      font-weight: 900;
+      min-width: 90px;
+      text-align: center;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .piece-btn, .small-btn, .square-btn {
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 12px;
+      padding: 9px 6px;
+      font-weight: 900;
+      font-size: 1rem;
+      min-height: 42px;
+      touch-action: manipulation;
+    }
+
+    .piece-btn.selected, .small-btn.selected, .square-btn.selected {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .piece-icon {
+      display: block;
+      font-size: 1.38rem;
+      line-height: 1;
+    }
+
+    .piece-label {
+      display: block;
+      font-size: .72rem;
+      color: var(--muted);
+      margin-top: 2px;
+      font-weight: 700;
+    }
+
+    .piece-btn.selected .piece-label { color: white; }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 10px;
+      margin: 8px 0;
+      align-items: end;
+    }
+
+    .toggles {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 8px 0;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 8px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: white;
+      font-weight: 800;
+      user-select: none;
+    }
+
+    .toggle input {
+      width: auto;
+      transform: scale(1.2);
+    }
+
+    .files, .ranks {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 5px;
+      margin: 6px 0;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: .95rem;
+      font-size: .92rem;
     }
 
     th, td {
-      padding: 8px 6px;
+      padding: 8px 5px;
       border-bottom: 1px solid #eadcc8;
       text-align: center;
     }
 
     th {
       color: var(--muted);
-      font-weight: 700;
+      font-weight: 800;
     }
 
     .summary {
@@ -175,44 +294,44 @@
       grid-template-columns: 1fr 1fr;
       gap: 8px;
       margin-top: 10px;
-      font-size: .95rem;
+      font-size: .92rem;
       color: var(--muted);
     }
 
-    .hint {
-      font-size: .9rem;
-      color: var(--muted);
-      text-align: center;
-      margin: 8px 0 0;
+    .last-move {
+      font-weight: 900;
+      white-space: nowrap;
     }
 
     @media (max-width: 520px) {
-      .app { padding: 10px; }
-      .setup-grid { grid-template-columns: 1fr 1fr; }
+      .app { padding: 9px; }
       .clock-row { gap: 8px; }
-      .player { min-height: 140px; padding: 12px 8px; }
-      .total-time { font-size: 1.75rem; }
-      .big-button { min-height: 92px; font-size: 1.18rem; }
+      .player { min-height: 118px; padding: 10px 6px; }
+      .total-time { font-size: 1.65rem; }
+      .clock-button { min-height: 84px; font-size: 1rem; }
       .buttons { grid-template-columns: 1fr; }
+      .quick-grid { grid-template-columns: repeat(3, 1fr); }
+      .form-row { grid-template-columns: 1fr; }
+      th, td { font-size: .86rem; padding: 7px 3px; }
     }
   </style>
 </head>
 <body>
   <div class="app">
-    <h1>Reloj de jugadas</h1>
+    <h1>Chezz Clock</h1>
 
     <section class="setup">
       <div class="setup-grid">
         <div>
-          <label for="baseMinutes">Tiempo inicial por jugador</label>
+          <label for="baseMinutes">Tiempo inicial</label>
           <input id="baseMinutes" type="number" min="0" step="1" value="45">
         </div>
         <div>
-          <label for="incrementSeconds">Incremento por jugada</label>
+          <label for="incrementSeconds">Incremento</label>
           <input id="incrementSeconds" type="number" min="0" step="1" value="15">
         </div>
       </div>
-      <p class="hint">Para entrenar 45+15, deja 45 y 15. Para solo medir jugadas, puedes poner 0 y 0.</p>
+      <p class="hint">Formato 45+15: coloca 45 y 15. Para solo medir jugadas: 0 y 0.</p>
     </section>
 
     <section class="panel">
@@ -220,18 +339,23 @@
         <div id="whiteCard" class="player active">
           <div class="player-name">Blancas</div>
           <div id="whiteTotal" class="total-time">45:00</div>
-          <div>Jugada actual: <strong id="whiteMove">0s</strong></div>
+          <div>Actual: <strong id="whiteMove">0s</strong></div>
         </div>
         <div id="blackCard" class="player">
           <div class="player-name">Negras</div>
           <div id="blackTotal" class="total-time">45:00</div>
-          <div>Jugada actual: <strong id="blackMove">0s</strong></div>
+          <div>Actual: <strong id="blackMove">0s</strong></div>
         </div>
       </div>
 
       <div id="turnText" class="turn">Turno de blancas</div>
 
-      <button id="tapButton" class="big-button">Tocar cuando blancas hacen su jugada</button>
+      <div class="physical-buttons">
+        <button id="whiteClockBtn" class="clock-button">♙ Blancas movieron</button>
+        <button id="blackClockBtn" class="clock-button" disabled>♟ Negras movieron</button>
+      </div>
+
+      <p class="hint">Solo se activa el botón del jugador que tiene el turno. Además hay una pequeña pausa anti doble-toque.</p>
 
       <div class="buttons">
         <button id="startPauseBtn" class="secondary ok">Iniciar</button>
@@ -240,14 +364,62 @@
       </div>
     </section>
 
+    <section class="notation">
+      <div class="notation-title">
+        <h2>Anotar jugada rápida</h2>
+        <div id="notationPreview" class="preview">—</div>
+      </div>
+
+      <label>Pieza</label>
+      <div class="quick-grid" id="pieceButtons">
+        <button class="piece-btn selected" data-piece=""><span class="piece-icon">♙</span><span class="piece-label">peón</span></button>
+        <button class="piece-btn" data-piece="C"><span class="piece-icon">♘</span><span class="piece-label">caballo</span></button>
+        <button class="piece-btn" data-piece="A"><span class="piece-icon">♗</span><span class="piece-label">alfil</span></button>
+        <button class="piece-btn" data-piece="T"><span class="piece-icon">♖</span><span class="piece-label">torre</span></button>
+        <button class="piece-btn" data-piece="D"><span class="piece-icon">♕</span><span class="piece-label">dama</span></button>
+        <button class="piece-btn" data-piece="R"><span class="piece-icon">♔</span><span class="piece-label">rey</span></button>
+      </div>
+
+      <div class="form-row">
+        <div>
+          <label for="sourceHint">Origen / extra opcional</label>
+          <input id="sourceHint" type="text" maxlength="2" placeholder="Ej: b, 1 o b1">
+        </div>
+        <div>
+          <label for="destinationInput">Casilla destino</label>
+          <input id="destinationInput" type="text" maxlength="2" placeholder="Ej: e4">
+        </div>
+      </div>
+
+      <label>Destino rápido</label>
+      <div class="files" id="fileButtons"></div>
+      <div class="ranks" id="rankButtons"></div>
+
+      <div class="toggles">
+        <label class="toggle"><input id="captureCheck" type="checkbox"> captura</label>
+        <label class="toggle"><input id="checkCheck" type="checkbox"> jaque +</label>
+        <label class="toggle"><input id="mateCheck" type="checkbox"> mate #</label>
+      </div>
+
+      <div class="buttons">
+        <button id="castleShortBtn" class="secondary">0-0</button>
+        <button id="castleLongBtn" class="secondary">0-0-0</button>
+        <button id="clearNotationBtn" class="secondary danger">Limpiar jugada</button>
+      </div>
+
+      <p class="hint">Ejemplos: peón + e4 = e4. Caballo + f3 = Cf3. Peón + origen e + captura + d5 = exd5.</p>
+    </section>
+
     <section class="moves">
-      <h2 style="font-size:1.05rem;margin:0 0 8px;">Tiempos por jugada</h2>
+      <h2 style="font-size:1.02rem;margin:0 0 8px;">Planilla rápida</h2>
       <table>
         <thead>
           <tr>
             <th>#</th>
             <th>Blancas</th>
+            <th>Tiempo</th>
             <th>Negras</th>
+            <th>Tiempo</th>
           </tr>
         </thead>
         <tbody id="movesBody"></tbody>
@@ -268,6 +440,8 @@
 
   <script>
     const $ = (id) => document.getElementById(id);
+    const STORAGE_KEY = "chezzClockV2";
+    const DOUBLE_TAP_LOCK_MS = 700;
 
     const state = {
       running: false,
@@ -278,10 +452,10 @@
       currentMoveStart: null,
       currentMoveElapsed: 0,
       records: [],
-      history: []
+      history: [],
+      lockedUntil: 0,
+      notation: { piece: "", source: "", file: "", rank: "", destination: "", capture: false, check: false, mate: false, special: "" }
     };
-
-    let timerId = null;
 
     function formatTime(seconds) {
       seconds = Math.max(0, Math.round(seconds));
@@ -298,29 +472,48 @@
       return `${m}m ${s}s`;
     }
 
-    function getBaseSeconds() {
-      return Math.max(0, Number($("baseMinutes").value || 0)) * 60;
-    }
-
-    function getIncrementSeconds() {
-      return Math.max(0, Number($("incrementSeconds").value || 0));
-    }
+    function getBaseSeconds() { return Math.max(0, Number($("baseMinutes").value || 0)) * 60; }
+    function getIncrementSeconds() { return Math.max(0, Number($("incrementSeconds").value || 0)); }
 
     function currentElapsedNow() {
       if (!state.running || !state.currentMoveStart) return state.currentMoveElapsed;
       return state.currentMoveElapsed + (Date.now() - state.currentMoveStart) / 1000;
     }
 
+    function normalizeSquare(value) {
+      return (value || "").trim().toLowerCase().replace(/[^a-h1-8]/g, "").slice(0, 2);
+    }
+
+    function buildNotation() {
+      const n = state.notation;
+      if (n.special) {
+        let suffix = n.mate ? "#" : (n.check ? "+" : "");
+        return n.special + suffix;
+      }
+      const destination = normalizeSquare(n.destination || (n.file + n.rank));
+      if (!destination || destination.length < 2) return "";
+      const suffix = n.mate ? "#" : (n.check ? "+" : "");
+      const source = (n.source || "").trim();
+      const capture = n.capture ? "x" : "";
+      return `${n.piece}${source}${capture}${destination}${suffix}`;
+    }
+
+    function resetNotation() {
+      state.notation = { piece: "", source: "", file: "", rank: "", destination: "", capture: false, check: false, mate: false, special: "" };
+      syncNotationInputs();
+      render();
+    }
+
     function save() {
-      localStorage.setItem("relojJugadasNicole", JSON.stringify({
-        state,
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        state: { ...state, currentMoveStart: null, running: false, lockedUntil: 0 },
         baseMinutes: $("baseMinutes").value,
         incrementSeconds: $("incrementSeconds").value
       }));
     }
 
     function load() {
-      const raw = localStorage.getItem("relojJugadasNicole");
+      const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
       try {
         const data = JSON.parse(raw);
@@ -329,9 +522,11 @@
         Object.assign(state, data.state);
         state.running = false;
         state.currentMoveStart = null;
-      } catch (e) {
-        console.warn("No se pudo cargar el guardado", e);
-      }
+        state.lockedUntil = 0;
+        if (!state.notation) resetNotation();
+        if (!Array.isArray(state.records)) state.records = [];
+        if (!Array.isArray(state.history)) state.history = [];
+      } catch (e) { console.warn("No se pudo cargar el guardado", e); }
     }
 
     function snapshot() {
@@ -349,41 +544,65 @@
       const elapsed = currentElapsedNow();
       let whiteRem = state.whiteRemaining;
       let blackRem = state.blackRemaining;
-
       if (state.running && state.turn === "white") whiteRem -= elapsed;
       if (state.running && state.turn === "black") blackRem -= elapsed;
 
       $("whiteTotal").textContent = formatTime(whiteRem);
       $("blackTotal").textContent = formatTime(blackRem);
-
       $("whiteMove").textContent = state.turn === "white" ? formatMove(elapsed) : "0s";
       $("blackMove").textContent = state.turn === "black" ? formatMove(elapsed) : "0s";
-
       $("whiteCard").classList.toggle("active", state.turn === "white");
       $("blackCard").classList.toggle("active", state.turn === "black");
 
       const sideText = state.turn === "white" ? "blancas" : "negras";
       $("turnText").textContent = state.running ? `Turno de ${sideText}` : `Pausado · turno de ${sideText}`;
-      $("tapButton").textContent = `Tocar cuando ${sideText} hacen su jugada`;
-      $("startPauseBtn").textContent = state.running ? "Pausar" : "Iniciar";
 
+      const locked = Date.now() < state.lockedUntil;
+      $("whiteClockBtn").disabled = locked || state.turn !== "white";
+      $("blackClockBtn").disabled = locked || state.turn !== "black";
+      $("startPauseBtn").textContent = state.running ? "Pausar" : "Iniciar";
+      $("notationPreview").textContent = buildNotation() || "—";
+      renderPieceButtons();
+      renderSquareButtons();
       renderTable();
     }
 
-    function renderTable() {
+    function renderPieceButtons() {
+      document.querySelectorAll(".piece-btn").forEach(btn => {
+        btn.classList.toggle("selected", btn.dataset.piece === state.notation.piece && !state.notation.special);
+      });
+    }
+
+    function renderSquareButtons() {
+      document.querySelectorAll("[data-file]").forEach(btn => btn.classList.toggle("selected", btn.dataset.file === state.notation.file));
+      document.querySelectorAll("[data-rank]").forEach(btn => btn.classList.toggle("selected", btn.dataset.rank === state.notation.rank));
+    }
+
+    function groupRecords() {
       const grouped = [];
       for (const r of state.records) {
-        if (!grouped[r.move - 1]) grouped[r.move - 1] = { move: r.move, white: "", black: "" };
-        grouped[r.move - 1][r.side] = formatMove(r.seconds);
+        if (!grouped[r.move - 1]) grouped[r.move - 1] = { move: r.move, whiteNotation: "", whiteSeconds: "", blackNotation: "", blackSeconds: "" };
+        if (r.side === "white") {
+          grouped[r.move - 1].whiteNotation = r.notation || "—";
+          grouped[r.move - 1].whiteSeconds = formatMove(r.seconds);
+        } else {
+          grouped[r.move - 1].blackNotation = r.notation || "—";
+          grouped[r.move - 1].blackSeconds = formatMove(r.seconds);
+        }
       }
+      return grouped;
+    }
 
+    function renderTable() {
+      const grouped = groupRecords();
       $("movesBody").innerHTML = grouped.map(row => `
         <tr>
           <td>${row.move}</td>
-          <td>${row.white || "—"}</td>
-          <td>${row.black || "—"}</td>
-        </tr>
-      `).join("");
+          <td class="last-move">${row.whiteNotation || ""}</td>
+          <td>${row.whiteSeconds || ""}</td>
+          <td class="last-move">${row.blackNotation || ""}</td>
+          <td>${row.blackSeconds || ""}</td>
+        </tr>`).join("");
 
       const whites = state.records.filter(r => r.side === "white").map(r => r.seconds);
       const blacks = state.records.filter(r => r.side === "black").map(r => r.seconds);
@@ -404,19 +623,20 @@
       render();
     }
 
-    function makeMove() {
-      if (!state.running) startPause();
+    function pressClock(side) {
+      if (side !== state.turn) return;
+      if (Date.now() < state.lockedUntil) return;
+      if (!state.running) {
+        state.currentMoveStart = Date.now();
+        state.running = true;
+      }
 
       snapshot();
-
       const elapsed = currentElapsedNow();
       const inc = getIncrementSeconds();
+      const notation = buildNotation();
 
-      state.records.push({
-        move: state.moveNumber,
-        side: state.turn,
-        seconds: elapsed
-      });
+      state.records.push({ move: state.moveNumber, side: state.turn, seconds: elapsed, notation });
 
       if (state.turn === "white") {
         state.whiteRemaining = Math.max(0, state.whiteRemaining - elapsed) + inc;
@@ -429,12 +649,15 @@
 
       state.currentMoveElapsed = 0;
       state.currentMoveStart = Date.now();
+      state.lockedUntil = Date.now() + DOUBLE_TAP_LOCK_MS;
+      if (navigator.vibrate) navigator.vibrate(35);
+      resetNotation();
       save();
       render();
     }
 
     function resetAll() {
-      if (!confirm("¿Reiniciar el reloj y borrar la lista de jugadas?")) return;
+      if (!confirm("¿Reiniciar el reloj y borrar la planilla?")) return;
       state.running = false;
       state.turn = "white";
       state.moveNumber = 1;
@@ -444,6 +667,8 @@
       state.currentMoveElapsed = 0;
       state.records = [];
       state.history = [];
+      state.lockedUntil = 0;
+      resetNotation();
       save();
       render();
     }
@@ -459,19 +684,18 @@
       state.currentMoveElapsed = prev.currentMoveElapsed;
       state.records = prev.records;
       state.currentMoveStart = state.running ? Date.now() : null;
+      state.lockedUntil = 0;
       save();
       render();
     }
 
     function textSummary() {
       const rows = [];
-      const grouped = [];
-      for (const r of state.records) {
-        if (!grouped[r.move - 1]) grouped[r.move - 1] = { move: r.move, white: "", black: "" };
-        grouped[r.move - 1][r.side] = formatMove(r.seconds);
-      }
+      const grouped = groupRecords();
       for (const row of grouped) {
-        rows.push(`${row.move}. ${row.white || "-"}, ${row.black || "-"}`);
+        const white = row.whiteNotation ? `${row.whiteNotation} (${row.whiteSeconds})` : "-";
+        const black = row.blackNotation ? `${row.blackNotation} (${row.blackSeconds})` : "-";
+        rows.push(`${row.move}. ${white} ${black}`);
       }
       return rows.join("\n");
     }
@@ -482,39 +706,108 @@
       try {
         await navigator.clipboard.writeText(text);
         alert("Resumen copiado.");
-      } catch {
-        alert(text);
-      }
+      } catch { alert(text); }
     }
 
     function downloadCSV() {
       if (!state.records.length) return alert("Todavía no hay jugadas.");
-      const lines = ["jugada,blancas,negras"];
-      const grouped = [];
-      for (const r of state.records) {
-        if (!grouped[r.move - 1]) grouped[r.move - 1] = { move: r.move, white: "", black: "" };
-        grouped[r.move - 1][r.side] = Math.round(r.seconds);
-      }
+      const grouped = groupRecords();
+      const lines = ["jugada,blancas,tiempo_blancas,negras,tiempo_negras"];
       for (const row of grouped) {
-        lines.push(`${row.move},${row.white},${row.black}`);
+        lines.push([row.move, row.whiteNotation || "", row.whiteSeconds || "", row.blackNotation || "", row.blackSeconds || ""].map(v => `"${String(v).replaceAll('"', '""')}"`).join(","));
       }
       const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "tiempos_jugadas.csv";
+      a.download = "chezz_clock_planilla.csv";
       a.click();
       URL.revokeObjectURL(url);
     }
 
     function clearStorage() {
       if (!confirm("¿Borrar el guardado del navegador?")) return;
-      localStorage.removeItem("relojJugadasNicole");
+      localStorage.removeItem(STORAGE_KEY);
       alert("Guardado borrado.");
     }
 
+    function syncNotationInputs() {
+      $("sourceHint").value = state.notation.source || "";
+      $("destinationInput").value = state.notation.destination || "";
+      $("captureCheck").checked = !!state.notation.capture;
+      $("checkCheck").checked = !!state.notation.check;
+      $("mateCheck").checked = !!state.notation.mate;
+    }
+
+    function createSquareButtons() {
+      const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
+      const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"];
+      $("fileButtons").innerHTML = files.map(f => `<button class="square-btn" data-file="${f}">${f}</button>`).join("");
+      $("rankButtons").innerHTML = ranks.map(r => `<button class="square-btn" data-rank="${r}">${r}</button>`).join("");
+
+      document.querySelectorAll("[data-file]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.notation.file = btn.dataset.file;
+          state.notation.destination = state.notation.file + state.notation.rank;
+          $("destinationInput").value = state.notation.destination;
+          state.notation.special = "";
+          render();
+        });
+      });
+
+      document.querySelectorAll("[data-rank]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.notation.rank = btn.dataset.rank;
+          state.notation.destination = state.notation.file + state.notation.rank;
+          $("destinationInput").value = state.notation.destination;
+          state.notation.special = "";
+          render();
+        });
+      });
+    }
+
+    document.querySelectorAll(".piece-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        state.notation.piece = btn.dataset.piece;
+        state.notation.special = "";
+        render();
+      });
+    });
+
+    $("sourceHint").addEventListener("input", () => {
+      state.notation.source = $("sourceHint").value.trim();
+      state.notation.special = "";
+      render();
+    });
+
+    $("destinationInput").addEventListener("input", () => {
+      const value = normalizeSquare($("destinationInput").value);
+      state.notation.destination = value;
+      if (value.length >= 1) state.notation.file = value[0] || "";
+      if (value.length >= 2) state.notation.rank = value[1] || "";
+      state.notation.special = "";
+      render();
+    });
+
+    $("captureCheck").addEventListener("change", () => { state.notation.capture = $("captureCheck").checked; state.notation.special = ""; render(); });
+    $("checkCheck").addEventListener("change", () => {
+      state.notation.check = $("checkCheck").checked;
+      if (state.notation.check) { state.notation.mate = false; $("mateCheck").checked = false; }
+      render();
+    });
+    $("mateCheck").addEventListener("change", () => {
+      state.notation.mate = $("mateCheck").checked;
+      if (state.notation.mate) { state.notation.check = false; $("checkCheck").checked = false; }
+      render();
+    });
+
+    $("castleShortBtn").addEventListener("click", () => { state.notation.special = "0-0"; state.notation.piece = "R"; render(); });
+    $("castleLongBtn").addEventListener("click", () => { state.notation.special = "0-0-0"; state.notation.piece = "R"; render(); });
+    $("clearNotationBtn").addEventListener("click", resetNotation);
+
     $("startPauseBtn").addEventListener("click", startPause);
-    $("tapButton").addEventListener("click", makeMove);
+    $("whiteClockBtn").addEventListener("click", () => pressClock("white"));
+    $("blackClockBtn").addEventListener("click", () => pressClock("black"));
     $("resetBtn").addEventListener("click", resetAll);
     $("undoBtn").addEventListener("click", undoLast);
     $("copyBtn").addEventListener("click", copySummary);
@@ -529,20 +822,17 @@
         render();
       }
     });
+    $("incrementSeconds").addEventListener("change", () => { save(); render(); });
 
-    $("incrementSeconds").addEventListener("change", () => {
-      save();
-      render();
-    });
-
+    createSquareButtons();
     load();
     if (!state.records.length) {
       state.whiteRemaining = getBaseSeconds();
       state.blackRemaining = getBaseSeconds();
     }
-
+    syncNotationInputs();
     render();
-    timerId = setInterval(render, 250);
+    setInterval(render, 250);
   </script>
 </body>
 </html>
